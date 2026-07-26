@@ -3,6 +3,7 @@ from functools import wraps
 from flask import make_response
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_jwt_extended.exceptions import JWTExtendedException
+from jwt.exceptions import PyJWTError
 
 from models import db, User
 
@@ -27,7 +28,7 @@ def jwt_required_restful(fn):
     def wrapper(*args, **kwargs):
         try:
             verify_jwt_in_request()
-        except JWTExtendedException as err:
+        except (JWTExtendedException, PyJWTError) as err:
             return error_response(str(err), 401)
         return fn(*args, **kwargs)
 
@@ -41,7 +42,7 @@ def admin_required(fn):
     def wrapper(*args, **kwargs):
         try:
             verify_jwt_in_request()
-        except JWTExtendedException as err:
+        except (JWTExtendedException, PyJWTError) as err:
             return error_response(str(err), 401)
         user = current_user()
         if not user or not user.is_admin:
