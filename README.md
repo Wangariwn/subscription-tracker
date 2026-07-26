@@ -73,6 +73,8 @@ python seed.py
 flask run --port=5555
 ```
 
+Default seed accounts: `admin` / `admin123` (admin), `demo` / `demo123`, `alex` / `alex123`, `sam` / `sam1234`.
+
 ### Frontend
 
 ```bash
