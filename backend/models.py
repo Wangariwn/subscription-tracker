@@ -3,6 +3,7 @@ from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_serializer import SerializerMixin
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 
@@ -43,6 +44,18 @@ class User(db.Model, SerializerMixin):
 
     # many:many via association object — services this user tracks
     catalog_services = association_proxy("subscriptions", "catalog_service")
+
+    def set_password(self, password):
+        if not password or len(password) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    @property
+    def is_admin(self):
+        return self.role == "admin"
 
 
 class Profile(db.Model, SerializerMixin):

@@ -75,6 +75,17 @@ flask run --port=5555
 
 Default seed accounts: `admin` / `admin123` (admin), `demo` / `demo123`, `alex` / `alex123`, `sam` / `sam1234`.
 
+### Auth endpoints
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `/auth/register` | Public | Register user + 1:1 profile (hashed password) |
+| `POST` | `/auth/login` | Public | Login; returns JWT `access_token` |
+| `GET` | `/auth/me` | JWT | Current user + profile |
+| `GET` | `/admin/users` | JWT + admin | List users (`403` for non-admins) |
+
+Send `Authorization: Bearer <token>` on protected routes.
+
 ### Frontend
 
 ```bash

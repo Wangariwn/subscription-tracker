@@ -3,8 +3,6 @@
 
 from datetime import date, timedelta
 
-from werkzeug.security import generate_password_hash
-
 from app import app
 from models import db, User, Profile, CatalogService, Subscription
 
@@ -81,8 +79,8 @@ def seed_users():
             username=item["username"],
             email=item["email"],
             role=item["role"],
-            password_hash=generate_password_hash(password),
         )
+        user.set_password(password)
         user.profile = Profile(**profile_data)
         users.append(user)
 
