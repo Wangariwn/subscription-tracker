@@ -86,6 +86,32 @@ Default seed accounts: `admin` / `admin123` (admin), `demo` / `demo123`, `alex` 
 
 Send `Authorization: Bearer <token>` on protected routes.
 
+### User endpoints
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/dashboard` | JWT | Spend aggregate, trials, upcoming renewals (eager-loaded) |
+| `GET` | `/subscriptions?page=&per_page=&category=&is_trial=` | JWT | Paginated list; filter across catalog category |
+| `POST` | `/subscriptions` | JWT | Create subscription (association row) |
+| `GET` | `/subscriptions/<id>` | JWT | Show own subscription |
+| `PATCH` | `/subscriptions/<id>` | JWT | Update own subscription |
+| `DELETE` | `/subscriptions/<id>` | JWT | Delete own subscription |
+| `GET` | `/catalog?page=&per_page=&category=` | JWT | Paginated catalog browse |
+| `GET` | `/catalog/<id>` | JWT | Catalog detail |
+| `GET` | `/catalog/<id>/subscribers` | JWT | Users tracking a service (join + profile) |
+
+Paginated responses include `items`, `total`, `page`, `per_page`, `total_pages`.
+
+### Admin endpoints
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/admin/users` | JWT + admin | List users |
+| `GET` | `/admin/analytics` | JWT + admin | Aggregates: `count`/`sum`/`group_by`/`having`, `.any()` trials |
+| `POST` | `/catalog` | JWT + admin | Create catalog template |
+| `PATCH` | `/catalog/<id>` | JWT + admin | Update catalog template |
+| `DELETE` | `/catalog/<id>` | JWT + admin | Delete catalog template |
+
 ### Frontend
 
 ```bash

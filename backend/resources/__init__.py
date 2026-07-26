@@ -1,5 +1,8 @@
 from resources.admin import AdminUsers
 from resources.auth import Login, Me, Register
+from resources.catalog import CatalogDetail, CatalogList, CatalogSubscribers
+from resources.dashboard import AdminAnalytics, Dashboard
+from resources.subscriptions import SubscriptionDetail, SubscriptionList
 
 
 def register_resources(api):
@@ -7,4 +10,14 @@ def register_resources(api):
     api.add_resource(Register, "/auth/register")
     api.add_resource(Login, "/auth/login")
     api.add_resource(Me, "/auth/me")
+
+    api.add_resource(Dashboard, "/dashboard")
+    api.add_resource(SubscriptionList, "/subscriptions")
+    api.add_resource(SubscriptionDetail, "/subscriptions/<int:id>")
+
+    api.add_resource(CatalogList, "/catalog")
+    api.add_resource(CatalogDetail, "/catalog/<int:id>")
+    api.add_resource(CatalogSubscribers, "/catalog/<int:id>/subscribers")
+
     api.add_resource(AdminUsers, "/admin/users")
+    api.add_resource(AdminAnalytics, "/admin/analytics")
