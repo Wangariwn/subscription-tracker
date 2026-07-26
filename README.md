@@ -43,6 +43,25 @@ backend/
 | **1:many** | `User` → many `Subscription`s |
 | **many:many** | `User` ↔ `CatalogService` via `Subscription` association object (extra: `cost`, dates, `enrolled_at`) |
 
+### Why these relationships (oral defense)
+
+- **1:1 User ↔ Profile** — auth fields stay on `User`; display preferences live on `Profile` with a **unique** `user_id` and `uselist=False`. Deleting a user cascades the profile.
+- **1:many User → Subscription** — one account owns many tracked bills. Queries always scope by `user_id` so users cannot read or mutate someone else’s rows.
+- **many:many User ↔ CatalogService via Subscription** — many people can track Netflix; one person can track many services. `Subscription` is an **association object** (not a bare join table) because enrolment carries **extra data**: `cost`, `renewal_date`, `is_trial`, `trial_expiration_date`, `enrolled_at`. Unique `(user_id, catalog_service_id)` prevents duplicate tracking.
+
+Serialization uses `serialize_rules` to cut recursion (`-user.subscriptions`, `-catalog_service.subscriptions`, `-password_hash`). Nested `catalog_service` is attached deliberately in resource serializers when needed.
+
+### Deep queries (oral defense)
+
+| Endpoint | What the query does |
+| --- | --- |
+| `GET /dashboard` | Eager-loads `catalog_service` (`joinedload`), sums non-trial `cost` with `func.sum`, filters trial alerts by date window |
+| `GET /subscriptions?category=` | Relationship filter via `.has(CatalogService.category == …)`, `order_by(renewal_date)`, `.paginate()` |
+| `GET /catalog/<id>/subscribers` | Joins association rows to `User` + `Profile` for one catalog service (many:many side) |
+| `GET /admin/analytics` | `join` + `group_by` category / service, `having(count >= 1)`, `func.sum`/`func.count`, and `User.subscriptions.any(is_trial)` |
+
+List endpoints never load-all-then-slice: they use SQLAlchemy `.paginate(page=…, per_page=…)`.
+
 ## Frontend structure
 
 ```
@@ -123,3 +142,18 @@ npm run dev
 Vite proxies `/api` → `http://127.0.0.1:5555`.
 
 Frontend routes: `/login`, `/register`, protected `/` (dashboard), `/subscriptions` (CRUD), `/subscriptions/new`, `/subscriptions/:id/edit`, and `/catalog`. JWT is stored in `localStorage` and attached as `Authorization: Bearer …`.
+
+Frontend data flow: `fetch` only (no axios), `AuthContext` holds the JWT, `useFetch` / `useApi` custom hooks, and every request surface shows **loading / error / success**. Unauthenticated visits to protected routes redirect to `/login`.
+
+## Requirement checklist
+
+| Requirement | Where it lives |
+| --- | --- |
+| JWT auth + hashed passwords | `resources/auth.py`, `User.set_password` (werkzeug) |
+| Roles (user vs admin) | `admin_required`, `/admin/*`, catalog writes |
+| 1:1 / 1:many / many:many | `models.py` + seed associations |
+| Pagination metadata | `resources/pagination.py` + list endpoints |
+| Deep queries (≥3) | dashboard, filtered subscriptions, subscribers, analytics |
+| Migrations + seed | `migrations/`, `seed.py` |
+| Frontend fetch + hooks + CRUD | `frontend/src/pages/*`, `hooks/*` |
+| Protected frontend routes | `components/ProtectedRoute.jsx` |
