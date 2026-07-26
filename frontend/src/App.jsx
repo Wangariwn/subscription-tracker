@@ -5,6 +5,9 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Subscriptions from "./pages/Subscriptions";
+import SubscriptionForm from "./pages/SubscriptionForm";
+import Catalog from "./pages/Catalog";
 import "./styles.css";
 
 function App() {
@@ -18,6 +21,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscriptions"
+            element={
+              <ProtectedRoute>
+                <Subscriptions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscriptions/new"
+            element={
+              <ProtectedRoute>
+                <SubscriptionForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscriptions/:id/edit"
+            element={
+              <ProtectedRoute>
+                <SubscriptionForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalog"
+            element={
+              <ProtectedRoute>
+                <Catalog />
               </ProtectedRoute>
             }
           />

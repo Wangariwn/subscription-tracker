@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
 
-export function useFetch(url, options = {}) {
+export function useFetch(url) {
   const { token } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(Boolean(url));
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const refetch = useCallback(() => {
+    setReloadToken((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     if (!url) {
@@ -17,16 +22,12 @@ export function useFetch(url, options = {}) {
     setLoading(true);
     setError(null);
 
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    };
+    const headers = { "Content-Type": "application/json" };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
 
     fetch(url, {
-      ...options,
       headers,
       signal: controller.signal,
     })
@@ -40,12 +41,15 @@ export function useFetch(url, options = {}) {
       })
       .then(setData)
       .catch((err) => {
-        if (err.name !== "AbortError") setError(err);
+        if (err.name !== "AbortError") {
+          setError(err);
+          setData(null);
+        }
       })
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [url, token]);
+  }, [url, token, reloadToken]);
 
-  return { data, error, loading };
+  return { data, error, loading, refetch };
 }

@@ -122,4 +122,4 @@ npm run dev
 
 Vite proxies `/api` → `http://127.0.0.1:5555`.
 
-Frontend routes: `/login`, `/register`, and protected `/` (redirects to login when unauthenticated). JWT is stored in `localStorage` and attached as `Authorization: Bearer …`.
+Frontend routes: `/login`, `/register`, protected `/` (dashboard), `/subscriptions` (CRUD), `/subscriptions/new`, `/subscriptions/:id/edit`, and `/catalog`. JWT is stored in `localStorage` and attached as `Authorization: Bearer …`.

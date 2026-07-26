@@ -12,7 +12,11 @@ export function NavBar() {
       <nav className="nav-links">
         {isAuthenticated ? (
           <>
-            <NavLink to="/">Dashboard</NavLink>
+            <NavLink to="/" end>
+              Dashboard
+            </NavLink>
+            <NavLink to="/subscriptions">Subscriptions</NavLink>
+            <NavLink to="/catalog">Catalog</NavLink>
             <span className="nav-user">{user?.username}</span>
             <button type="button" className="linkish" onClick={logout}>
               Log out
