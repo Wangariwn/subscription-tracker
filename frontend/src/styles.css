@@ -186,7 +186,34 @@ select {
 .toolbar label {
   display: grid;
   gap: 0.35rem;
-  min-width: 180px;
+  min-width: 140px;
+}
+
+.filters {
+  align-items: end;
+}
+
+.avatar-row {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.avatar.placeholder {
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 h1 {

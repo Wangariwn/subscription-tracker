@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 from flask import make_response, request
 from flask_restful import Resource
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -35,32 +36,66 @@ class SubscriptionList(Resource):
 
     def get(self):
         """
-        Deep query: filter across relationships (category), order_by renewal,
-        eager-load catalog_service to avoid N+1.
+        Search + combined filters across relationships.
+        Query params: q, category, is_trial, min_cost, max_cost,
+        renewing_before, renewing_after, page, per_page.
         """
         user = current_user()
         page, per_page, err = parse_pagination_args()
         if err:
             return err
 
+        q = (request.args.get("q") or request.args.get("search") or "").strip()
         category = (request.args.get("category") or "").strip()
         is_trial = request.args.get("is_trial")
+        min_cost = request.args.get("min_cost")
+        max_cost = request.args.get("max_cost")
+        renewing_before = request.args.get("renewing_before")
+        renewing_after = request.args.get("renewing_after")
 
         query = (
             Subscription.query.options(joinedload(Subscription.catalog_service))
-            .filter_by(user_id=user.id)
+            .join(CatalogService)
+            .filter(Subscription.user_id == user.id)
             .order_by(Subscription.renewal_date.asc())
         )
 
-        if category:
-            # Filter across User → Subscription → CatalogService relationship
+        if q:
+            like = f"%{q}%"
             query = query.filter(
-                Subscription.catalog_service.has(CatalogService.category == category)
+                or_(
+                    CatalogService.service_name.ilike(like),
+                    CatalogService.category.ilike(like),
+                )
             )
+
+        if category:
+            query = query.filter(CatalogService.category == category)
 
         if is_trial is not None and is_trial != "":
             flag = str(is_trial).lower() in ("1", "true", "yes")
-            query = query.filter_by(is_trial=flag)
+            query = query.filter(Subscription.is_trial.is_(flag))
+
+        try:
+            if min_cost is not None and min_cost != "":
+                query = query.filter(Subscription.cost >= float(min_cost))
+            if max_cost is not None and max_cost != "":
+                query = query.filter(Subscription.cost <= float(max_cost))
+        except ValueError:
+            return error_response("min_cost and max_cost must be numbers")
+
+        try:
+            if renewing_after:
+                query = query.filter(
+                    Subscription.renewal_date >= parse_date(renewing_after, "renewing_after")
+                )
+            if renewing_before:
+                query = query.filter(
+                    Subscription.renewal_date
+                    <= parse_date(renewing_before, "renewing_before")
+                )
+        except ValueError as err:
+            return error_response(str(err))
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         items = [serialize_subscription(s) for s in pagination.items]

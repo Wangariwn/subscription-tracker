@@ -1,23 +1,9 @@
 import { useAuth } from "./useAuth";
 
-const API = "/api";
-
-export async function apiRequest(path, { method = "GET", token, body } = {}) {
-  const headers = { "Content-Type": "application/json" };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
+export async function parseApiResponse(response) {
   if (response.status === 204) {
     return null;
   }
-
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = Array.isArray(data.errors)
@@ -29,12 +15,32 @@ export async function apiRequest(path, { method = "GET", token, body } = {}) {
 }
 
 export function useApi() {
-  const { token } = useAuth();
+  const { authFetch } = useAuth();
 
   return {
-    get: (path) => apiRequest(path, { token }),
-    post: (path, body) => apiRequest(path, { method: "POST", token, body }),
-    patch: (path, body) => apiRequest(path, { method: "PATCH", token, body }),
-    del: (path) => apiRequest(path, { method: "DELETE", token }),
+    get: async (path) => parseApiResponse(await authFetch(path)),
+    post: async (path, body) =>
+      parseApiResponse(
+        await authFetch(path, {
+          method: "POST",
+          body: JSON.stringify(body),
+        })
+      ),
+    patch: async (path, body) =>
+      parseApiResponse(
+        await authFetch(path, {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        })
+      ),
+    del: async (path) =>
+      parseApiResponse(await authFetch(path, { method: "DELETE" })),
+    upload: async (path, formData) =>
+      parseApiResponse(
+        await authFetch(path, {
+          method: "POST",
+          body: formData,
+        })
+      ),
   };
 }

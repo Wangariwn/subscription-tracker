@@ -76,6 +76,7 @@ class Profile(db.Model, SerializerMixin):
     bio = db.Column(db.String(255), nullable=True)
     preferred_currency = db.Column(db.String(3), nullable=False, default="USD")
     timezone = db.Column(db.String(64), nullable=False, default="UTC")
+    avatar_url = db.Column(db.String(512), nullable=True)
 
     user = db.relationship("User", back_populates="profile")
 

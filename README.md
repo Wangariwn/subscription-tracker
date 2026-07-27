@@ -99,23 +99,25 @@ Default seed accounts: `admin` / `admin123` (admin), `demo` / `demo123`, `alex` 
 | Method | Endpoint | Auth | Description |
 | --- | --- | --- | --- |
 | `POST` | `/auth/register` | Public | Register user + 1:1 profile (hashed password) |
-| `POST` | `/auth/login` | Public | Login; returns JWT `access_token` |
+| `POST` | `/auth/login` | Public | Login; returns `access_token` + `refresh_token` |
+| `POST` | `/auth/refresh` | Refresh JWT | Issue a new access token |
 | `GET` | `/auth/me` | JWT | Current user + profile |
+| `POST` | `/auth/me/avatar` | JWT | Multipart image upload → Cloudinary (`file` field) |
 | `GET` | `/admin/users` | JWT + admin | List users (`403` for non-admins) |
 
-Send `Authorization: Bearer <token>` on protected routes.
+Send `Authorization: Bearer <token>` on protected routes. Access tokens expire (default 15m); use `/auth/refresh` with the refresh token.
 
 ### User endpoints
 
 | Method | Endpoint | Auth | Description |
 | --- | --- | --- | --- |
 | `GET` | `/dashboard` | JWT | Spend aggregate, trials, upcoming renewals (eager-loaded) |
-| `GET` | `/subscriptions?page=&per_page=&category=&is_trial=` | JWT | Paginated list; filter across catalog category |
+| `GET` | `/subscriptions?q=&category=&is_trial=&min_cost=&max_cost=&renewing_before=&renewing_after=&page=&per_page=` | JWT | Search + combined filters + pagination |
 | `POST` | `/subscriptions` | JWT | Create subscription (association row) |
 | `GET` | `/subscriptions/<id>` | JWT | Show own subscription |
 | `PATCH` | `/subscriptions/<id>` | JWT | Update own subscription |
 | `DELETE` | `/subscriptions/<id>` | JWT | Delete own subscription |
-| `GET` | `/catalog?page=&per_page=&category=` | JWT | Paginated catalog browse |
+| `GET` | `/catalog?q=&category=&min_cost=&max_cost=&page=&per_page=` | JWT | Paginated catalog browse + search |
 | `GET` | `/catalog/<id>` | JWT | Catalog detail |
 | `GET` | `/catalog/<id>/subscribers` | JWT | Users tracking a service (join + profile) |
 
@@ -135,25 +137,54 @@ Paginated responses include `items`, `total`, `page`, `per_page`, `total_pages`.
 
 ```bash
 cd frontend
+cp .env.example .env   # optional; omit VITE_API_URL to use Vite `/api` proxy
 npm install
 npm run dev
 ```
 
-Vite proxies `/api` → `http://127.0.0.1:5555`.
+Vite proxies `/api` → `http://127.0.0.1:5555` when `VITE_API_URL` is unset.
 
-Frontend routes: `/login`, `/register`, protected `/` (dashboard), `/subscriptions` (CRUD), `/subscriptions/new`, `/subscriptions/:id/edit`, and `/catalog`. JWT is stored in `localStorage` and attached as `Authorization: Bearer …`.
+Frontend routes: `/login`, `/register`, protected `/`, `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit`, `/catalog`, `/profile`. Access + refresh tokens live in `localStorage`; expired access tokens are refreshed automatically.
 
-Frontend data flow: `fetch` only (no axios), `AuthContext` holds the JWT, `useFetch` / `useApi` custom hooks, and every request surface shows **loading / error / success**. Unauthenticated visits to protected routes redirect to `/login`.
+Frontend data flow: `fetch` only (no axios), `AuthContext` holds tokens, `useFetch` / `useApi` custom hooks, and every request surface shows **loading / error / success**.
+
+### Tests
+
+```bash
+cd backend
+source .venv/bin/activate
+pip install -r requirements.txt
+python run_smoke_tests.py   # no extra deps
+# or
+pytest -q                   # after pytest is installed
+```
+
+### Deploy (Render + Vercel)
+
+1. **Backend (Render)** — connect this repo, use `render.yaml` (or Web Service with root `backend`, start `gunicorn -b 0.0.0.0:$PORT 'app:app'`). Set env vars from `.env.example`, run `flask db upgrade` + `python seed.py` in a one-off shell.
+2. **Frontend (Vercel/Render static)** — set `VITE_API_URL` to the live API URL (no trailing slash). Set backend `FRONTEND_ORIGIN` to the live frontend origin.
+3. **Cloudinary** — create a free cloud, set `CLOUDINARY_*` on the API service.
+
+Live URLs (fill in after you deploy):
+
+| App | URL |
+| --- | --- |
+| API | _pending deploy_ |
+| Frontend | _pending deploy_ |
 
 ## Requirement checklist
 
 | Requirement | Where it lives |
 | --- | --- |
 | JWT auth + hashed passwords | `resources/auth.py`, `User.set_password` (werkzeug) |
+| Refresh tokens / expiry | `/auth/refresh`, `AuthContext.authFetch` |
 | Roles (user vs admin) | `admin_required`, `/admin/*`, catalog writes |
 | 1:1 / 1:many / many:many | `models.py` + seed associations |
 | Pagination metadata | `resources/pagination.py` + list endpoints |
+| Search + combined filters | `GET /subscriptions`, `GET /catalog` |
 | Deep queries (≥3) | dashboard, filtered subscriptions, subscribers, analytics |
+| Image uploads | `POST /auth/me/avatar` (Cloudinary) |
 | Migrations + seed | `migrations/`, `seed.py` |
+| Automated tests | `backend/tests/` |
 | Frontend fetch + hooks + CRUD | `frontend/src/pages/*`, `hooks/*` |
 | Protected frontend routes | `components/ProtectedRoute.jsx` |

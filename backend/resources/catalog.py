@@ -1,5 +1,6 @@
 from flask import make_response, request
 from flask_restful import Resource
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -18,10 +19,29 @@ class CatalogList(Resource):
         if err:
             return err
 
+        q = (request.args.get("q") or request.args.get("search") or "").strip()
         category = (request.args.get("category") or "").strip()
+        min_cost = request.args.get("min_cost")
+        max_cost = request.args.get("max_cost")
+
         query = CatalogService.query.order_by(CatalogService.service_name.asc())
+        if q:
+            like = f"%{q}%"
+            query = query.filter(
+                or_(
+                    CatalogService.service_name.ilike(like),
+                    CatalogService.category.ilike(like),
+                )
+            )
         if category:
             query = query.filter(CatalogService.category == category)
+        try:
+            if min_cost is not None and min_cost != "":
+                query = query.filter(CatalogService.default_cost >= float(min_cost))
+            if max_cost is not None and max_cost != "":
+                query = query.filter(CatalogService.default_cost <= float(max_cost))
+        except ValueError:
+            return error_response("min_cost and max_cost must be numbers")
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         items = [s.to_dict() for s in pagination.items]

@@ -6,7 +6,11 @@ import { useApi } from "../hooks/useApi";
 export default function Subscriptions() {
   const api = useApi();
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
   const [category, setCategory] = useState("");
+  const [isTrial, setIsTrial] = useState("");
+  const [minCost, setMinCost] = useState("");
+  const [maxCost, setMaxCost] = useState("");
   const [actionError, setActionError] = useState(null);
   const [actionStatus, setActionStatus] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -16,9 +20,13 @@ export default function Subscriptions() {
       page: String(page),
       per_page: "5",
     });
+    if (q.trim()) params.set("q", q.trim());
     if (category) params.set("category", category);
+    if (isTrial !== "") params.set("is_trial", isTrial);
+    if (minCost !== "") params.set("min_cost", minCost);
+    if (maxCost !== "") params.set("max_cost", maxCost);
     return params.toString();
-  }, [page, category]);
+  }, [page, q, category, isTrial, minCost, maxCost]);
 
   const { data, error, loading, refetch } = useFetch(
     `/api/subscriptions?${query}`
@@ -40,21 +48,43 @@ export default function Subscriptions() {
     }
   }
 
+  function resetFilters() {
+    setPage(1);
+    setQ("");
+    setCategory("");
+    setIsTrial("");
+    setMinCost("");
+    setMaxCost("");
+  }
+
   return (
     <main className="page wide">
       <div className="page-head">
         <div>
           <h1>Subscriptions</h1>
-          <p className="lede">Full CRUD against your personal association rows.</p>
+          <p className="lede">
+            Search and combine filters (category, trial, cost) on one list endpoint.
+          </p>
         </div>
         <Link className="button-link" to="/subscriptions/new">
           Add subscription
         </Link>
       </div>
 
-      <div className="toolbar panel compact">
+      <div className="toolbar panel compact filters">
         <label>
-          Category filter
+          Search
+          <input
+            value={q}
+            onChange={(e) => {
+              setPage(1);
+              setQ(e.target.value);
+            }}
+            placeholder="Netflix, Music…"
+          />
+        </label>
+        <label>
+          Category
           <select
             value={category}
             onChange={(e) => {
@@ -69,6 +99,49 @@ export default function Subscriptions() {
             <option value="AI">AI</option>
           </select>
         </label>
+        <label>
+          Trial
+          <select
+            value={isTrial}
+            onChange={(e) => {
+              setPage(1);
+              setIsTrial(e.target.value);
+            }}
+          >
+            <option value="">Any</option>
+            <option value="true">Trials only</option>
+            <option value="false">Paid only</option>
+          </select>
+        </label>
+        <label>
+          Min cost
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={minCost}
+            onChange={(e) => {
+              setPage(1);
+              setMinCost(e.target.value);
+            }}
+          />
+        </label>
+        <label>
+          Max cost
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={maxCost}
+            onChange={(e) => {
+              setPage(1);
+              setMaxCost(e.target.value);
+            }}
+          />
+        </label>
+        <button type="button" className="linkish" onClick={resetFilters}>
+          Reset
+        </button>
         <Link to="/catalog">Browse catalog</Link>
       </div>
 
@@ -88,8 +161,8 @@ export default function Subscriptions() {
                       {sub.catalog_service?.service_name || "Service"}
                     </strong>
                     <div className="muted">
-                      {sub.catalog_service?.category} · ${Number(sub.cost).toFixed(2)} ·
-                      renews {sub.renewal_date}
+                      {sub.catalog_service?.category} · $
+                      {Number(sub.cost).toFixed(2)} · renews {sub.renewal_date}
                       {sub.is_trial ? " · trial" : ""}
                     </div>
                   </div>
@@ -108,7 +181,7 @@ export default function Subscriptions() {
               ))}
             </ul>
           ) : (
-            <p className="status">No subscriptions match this filter.</p>
+            <p className="status">No subscriptions match these filters.</p>
           )}
 
           <div className="pager">

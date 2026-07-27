@@ -7,3 +7,6 @@ flask-cors
 psycopg2-binary
 sqlalchemy-serializer
 python-dotenv
+cloudinary
+gunicorn
+pytest

@@ -17,7 +17,11 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     app.json.compact = False
 
-    CORS(app)
+    origin = app.config.get("FRONTEND_ORIGIN", "*")
+    if origin == "*":
+        CORS(app)
+    else:
+        CORS(app, origins=[origin], supports_credentials=True)
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)

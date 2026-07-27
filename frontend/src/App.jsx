@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import Subscriptions from "./pages/Subscriptions";
 import SubscriptionForm from "./pages/SubscriptionForm";
 import Catalog from "./pages/Catalog";
+import Profile from "./pages/Profile";
 import "./styles.css";
 
 function App() {
@@ -53,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Catalog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

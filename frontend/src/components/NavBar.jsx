@@ -17,6 +17,7 @@ export function NavBar() {
             </NavLink>
             <NavLink to="/subscriptions">Subscriptions</NavLink>
             <NavLink to="/catalog">Catalog</NavLink>
+            <NavLink to="/profile">Profile</NavLink>
             <span className="nav-user">{user?.username}</span>
             <button type="button" className="linkish" onClick={logout}>
               Log out

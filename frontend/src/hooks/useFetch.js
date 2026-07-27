@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
+import { parseApiResponse } from "./useApi";
 
 export function useFetch(url) {
-  const { token } = useAuth();
+  const { authFetch, token } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(Boolean(url));
@@ -22,23 +23,11 @@ export function useFetch(url) {
     setLoading(true);
     setError(null);
 
-    const headers = { "Content-Type": "application/json" };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    // url may be absolute (/api/...) from pages; strip /api prefix for authFetch
+    const path = url.startsWith("/api") ? url.slice(4) : url;
 
-    fetch(url, {
-      headers,
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
-          throw new Error(body.errors?.[0] || response.statusText);
-        }
-        if (response.status === 204) return null;
-        return response.json();
-      })
+    authFetch(path, { signal: controller.signal })
+      .then(parseApiResponse)
       .then(setData)
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -49,7 +38,7 @@ export function useFetch(url) {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [url, token, reloadToken]);
+  }, [url, token, reloadToken, authFetch]);
 
   return { data, error, loading, refetch };
 }

@@ -35,6 +35,20 @@ def jwt_required_restful(fn):
     return wrapper
 
 
+def jwt_refresh_required_restful(fn):
+    """Require a valid refresh token."""
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            verify_jwt_in_request(refresh=True)
+        except (JWTExtendedException, PyJWTError) as err:
+            return error_response(str(err), 401)
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
 def admin_required(fn):
     """Require a valid JWT and admin role."""
 
