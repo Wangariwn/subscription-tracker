@@ -193,6 +193,16 @@ export function AuthProvider({ children }) {
     } catch (err) {
       throw new Error(networkErrorMessage(err));
     }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(
+        response.status === 404
+          ? "API route not found. Make sure subscription-tracker backend is running on port 5555 (not another Flask app)."
+          : `Registration failed (HTTP ${response.status}). Is the correct backend running on port 5555?`
+      );
+    }
+
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(formatApiErrors(body, "Registration failed"));
