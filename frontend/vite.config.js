@@ -5,6 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    watch: {
+      // Avoid ENOSPC when system inotify watcher limit is low
+      usePolling: true,
+      interval: 1000,
+    },
     proxy: {
       "/api": {
         target: "http://127.0.0.1:5555",
