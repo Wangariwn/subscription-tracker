@@ -128,6 +128,114 @@ def seed_catalog():
             category="Productivity",
             default_trial_days=14,
         ),
+        CatalogService(
+            service_name="YouTube Premium",
+            default_cost=13.99,
+            category="Streaming",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Hulu",
+            default_cost=17.99,
+            category="Streaming",
+            default_trial_days=0,
+        ),
+        CatalogService(
+            service_name="Apple Music",
+            default_cost=10.99,
+            category="Music",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Amazon Prime",
+            default_cost=14.99,
+            category="Shopping",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="iCloud+",
+            default_cost=2.99,
+            category="Cloud",
+            default_trial_days=0,
+        ),
+        CatalogService(
+            service_name="Google One",
+            default_cost=1.99,
+            category="Cloud",
+            default_trial_days=0,
+        ),
+        CatalogService(
+            service_name="Microsoft 365",
+            default_cost=6.99,
+            category="Productivity",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Canva Pro",
+            default_cost=14.99,
+            category="Productivity",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Claude Pro",
+            default_cost=20.00,
+            category="AI",
+            default_trial_days=0,
+        ),
+        CatalogService(
+            service_name="GitHub Copilot",
+            default_cost=10.00,
+            category="AI",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Duolingo Super",
+            default_cost=6.99,
+            category="Education",
+            default_trial_days=14,
+        ),
+        CatalogService(
+            service_name="Coursera Plus",
+            default_cost=59.00,
+            category="Education",
+            default_trial_days=7,
+        ),
+        CatalogService(
+            service_name="Peloton App",
+            default_cost=12.99,
+            category="Fitness",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Xbox Game Pass",
+            default_cost=14.99,
+            category="Gaming",
+            default_trial_days=14,
+        ),
+        CatalogService(
+            service_name="PlayStation Plus",
+            default_cost=17.99,
+            category="Gaming",
+            default_trial_days=0,
+        ),
+        CatalogService(
+            service_name="The New York Times",
+            default_cost=17.00,
+            category="News",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Dropbox Plus",
+            default_cost=11.99,
+            category="Cloud",
+            default_trial_days=30,
+        ),
+        CatalogService(
+            service_name="Figma Professional",
+            default_cost=15.00,
+            category="Productivity",
+            default_trial_days=0,
+        ),
     ]
     db.session.add_all(catalog)
     db.session.commit()
@@ -215,6 +323,61 @@ def seed_subscriptions(users, catalog):
             trial_expiration_date=TODAY + timedelta(days=2),
             enrolled_at=TODAY - timedelta(days=12),
         ),
+        # Extra variety across new catalog services
+        Subscription(
+            user_id=users["demo"].id,
+            catalog_service_id=catalog["YouTube Premium"].id,
+            cost=13.99,
+            renewal_date=TODAY + timedelta(days=14),
+            is_trial=False,
+            trial_expiration_date=None,
+            enrolled_at=TODAY - timedelta(days=50),
+        ),
+        Subscription(
+            user_id=users["demo"].id,
+            catalog_service_id=catalog["GitHub Copilot"].id,
+            cost=0.0,
+            renewal_date=TODAY + timedelta(days=6),
+            is_trial=True,
+            trial_expiration_date=TODAY + timedelta(days=6),
+            enrolled_at=TODAY - timedelta(days=8),
+        ),
+        Subscription(
+            user_id=users["alex"].id,
+            catalog_service_id=catalog["Figma Professional"].id,
+            cost=15.00,
+            renewal_date=TODAY + timedelta(days=22),
+            is_trial=False,
+            trial_expiration_date=None,
+            enrolled_at=TODAY - timedelta(days=90),
+        ),
+        Subscription(
+            user_id=users["alex"].id,
+            catalog_service_id=catalog["Apple Music"].id,
+            cost=10.99,
+            renewal_date=TODAY + timedelta(days=11),
+            is_trial=False,
+            trial_expiration_date=None,
+            enrolled_at=TODAY - timedelta(days=45),
+        ),
+        Subscription(
+            user_id=users["sam"].id,
+            catalog_service_id=catalog["Duolingo Super"].id,
+            cost=6.99,
+            renewal_date=TODAY + timedelta(days=16),
+            is_trial=False,
+            trial_expiration_date=None,
+            enrolled_at=TODAY - timedelta(days=33),
+        ),
+        Subscription(
+            user_id=users["sam"].id,
+            catalog_service_id=catalog["Xbox Game Pass"].id,
+            cost=0.0,
+            renewal_date=TODAY + timedelta(days=4),
+            is_trial=True,
+            trial_expiration_date=TODAY + timedelta(days=4),
+            enrolled_at=TODAY - timedelta(days=3),
+        ),
         # admin has no subscriptions — still has 1:1 profile
     ]
     db.session.add_all(rows)
@@ -245,9 +408,10 @@ def main():
         print(f"Spotify tracked by {spotify_users} users (many:many check).")
         print(f"demo subscriptions: {len(users['demo'].subscriptions)} (1:many check).")
         print(f"demo profile: {users['demo'].profile.display_name} (1:1 check).")
-        assert len(subscriptions) == 8
+        assert len(subscriptions) == 14
         assert all(u.profile is not None for u in users.values())
         assert spotify_users >= 2
+        assert CatalogService.query.count() >= 20
 
 
 if __name__ == "__main__":

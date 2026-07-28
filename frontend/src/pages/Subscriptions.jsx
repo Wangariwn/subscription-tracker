@@ -97,6 +97,12 @@ export default function Subscriptions() {
             <option value="Music">Music</option>
             <option value="Productivity">Productivity</option>
             <option value="AI">AI</option>
+            <option value="Cloud">Cloud</option>
+            <option value="Education">Education</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Gaming">Gaming</option>
+            <option value="News">News</option>
+            <option value="Shopping">Shopping</option>
           </select>
         </label>
         <label>
