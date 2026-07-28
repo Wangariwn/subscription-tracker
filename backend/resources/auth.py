@@ -58,7 +58,7 @@ class Register(Resource):
             db.session.rollback()
             return error_response("Username or email already exists")
 
-        return make_response(user.to_dict(), 201)
+        return make_response(_token_pair(user), 201)
 
 
 class Login(Resource):

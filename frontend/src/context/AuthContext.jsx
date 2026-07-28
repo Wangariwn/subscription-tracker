@@ -5,6 +5,36 @@ export const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 let refreshPromise = null;
 
+function formatApiErrors(body, fallback = "Request failed") {
+  const errors = body?.errors;
+  if (Array.isArray(errors) && errors.length) {
+    return errors
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+          return Object.values(item).flat().join(", ");
+        }
+        return String(item);
+      })
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (typeof body?.message === "string" && body.message) {
+    return body.message;
+  }
+  return fallback;
+}
+
+function networkErrorMessage(err) {
+  if (
+    err instanceof TypeError ||
+    /failed to fetch|networkerror|load failed/i.test(err?.message || "")
+  ) {
+    return "Cannot reach the API. Start the backend on port 5555, then try again.";
+  }
+  return err?.message || "Something went wrong";
+}
+
 async function refreshAccessToken(refreshToken) {
   const response = await fetch(`${API_BASE}/auth/refresh`, {
     method: "POST",
@@ -134,28 +164,42 @@ export function AuthProvider({ children }) {
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loginWithCredentials(username, password) {
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    let response;
+    try {
+      response = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+    } catch (err) {
+      throw new Error(networkErrorMessage(err));
+    }
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(body.errors?.[0] || "Login failed");
+      throw new Error(formatApiErrors(body, "Login failed"));
     }
     login(body.access_token, body.user, body.refresh_token);
     return body;
   }
 
   async function registerUser(payload) {
-    const response = await fetch(`${API_BASE}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    let response;
+    try {
+      response = await fetch(`${API_BASE}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      throw new Error(networkErrorMessage(err));
+    }
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(body.errors?.[0] || "Registration failed");
+      throw new Error(formatApiErrors(body, "Registration failed"));
+    }
+    if (body.access_token) {
+      login(body.access_token, body.user, body.refresh_token);
+      return body;
     }
     return loginWithCredentials(payload.username, payload.password);
   }

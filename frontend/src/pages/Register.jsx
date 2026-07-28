@@ -20,11 +20,33 @@ export default function Register() {
   }
 
   function updateField(key) {
-    return (event) => setForm((prev) => ({ ...prev, [key]: event.target.value }));
+    return (event) => {
+      setError(null);
+      setForm((prev) => ({ ...prev, [key]: event.target.value }));
+    };
+  }
+
+  function clientValidate() {
+    if (form.username.trim().length < 3) {
+      return "Username must be at least 3 characters.";
+    }
+    if (!form.email.includes("@")) {
+      return "Enter a valid email address.";
+    }
+    if (form.password.length < 6) {
+      return "Password must be at least 6 characters.";
+    }
+    return null;
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    const localError = clientValidate();
+    if (localError) {
+      setError(localError);
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
@@ -47,7 +69,7 @@ export default function Register() {
       <h1>Register</h1>
       <p className="lede">Create a user account and profile, then receive a JWT.</p>
 
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <label>
           Username
           <input
@@ -57,6 +79,7 @@ export default function Register() {
             required
             minLength={3}
           />
+          <span className="field-hint">At least 3 characters</span>
         </label>
         <label>
           Email
@@ -86,10 +109,15 @@ export default function Register() {
             required
             minLength={6}
           />
+          <span className="field-hint">At least 6 characters</span>
         </label>
 
         {loading && <p className="status">Creating account…</p>}
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
 
         <button type="submit" disabled={loading}>
           Register
