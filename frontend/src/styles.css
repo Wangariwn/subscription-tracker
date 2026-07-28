@@ -1,19 +1,41 @@
 :root {
   color-scheme: light;
-  --bg: #f3efe6;
-  --ink: #1c1914;
-  --muted: #5c564c;
-  --line: #d6cfc0;
-  --accent: #0f5c4c;
-  --accent-ink: #f7f4ec;
-  --danger: #8b2e1f;
-  --panel: #fffdf8;
-  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+
+  /* Spring meadow palette */
+  --leaf: #2f6b4f;
+  --leaf-deep: #1e4634;
+  --moss: #6fa884;
+  --blossom: #c86b84;
+  --blossom-soft: #f3d5de;
+  --sky: #8ec4d4;
+  --sky-soft: #d7eef4;
+  --butter: #e6d28a;
+  --butter-soft: #f7efc8;
+  --petal: #f6ebe3;
+
+  --bg: #eef6f0;
+  --ink: #1e2f28;
+  --muted: #5a6f64;
+  --line: color-mix(in srgb, var(--moss) 28%, #ffffff);
+  --accent: var(--leaf);
+  --accent-ink: #f7fbf8;
+  --danger: #b2473e;
+  --panel: color-mix(in srgb, #ffffff 82%, var(--sky-soft));
+  --panel-strong: #ffffff;
+
+  --shadow-soft: 0 12px 40px color-mix(in srgb, var(--leaf) 10%, transparent);
+  --radius: 18px;
+
+  font-family: "Outfit", "Segoe UI", sans-serif;
   line-height: 1.5;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, #e7f0ea 0, transparent 40%),
-    linear-gradient(180deg, #f7f3ea, var(--bg));
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 0% -10%, var(--blossom-soft) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, var(--sky-soft) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 100%, var(--butter-soft) 0%, transparent 55%),
+    linear-gradient(165deg, #f4faf6 0%, #eaf4ef 45%, #e8f3f6 100%);
+  background-attachment: fixed;
   min-height: 100%;
 }
 
@@ -26,8 +48,55 @@ body {
   min-height: 100vh;
 }
 
+#root {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+}
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.45;
+  background-image:
+    radial-gradient(circle at 12% 28%, color-mix(in srgb, var(--moss) 18%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--blossom) 16%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 64% 72%, color-mix(in srgb, var(--sky) 18%, transparent) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 28% 80%, color-mix(in srgb, var(--butter) 22%, transparent) 0 2px, transparent 3px);
+  background-size: 180px 180px, 220px 220px, 160px 160px, 200px 200px;
+  animation: drift 28s linear infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-40px);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 a {
-  color: var(--accent);
+  color: var(--leaf);
+  transition: color 160ms ease;
+}
+
+a:hover {
+  color: var(--leaf-deep);
 }
 
 .nav {
@@ -35,57 +104,101 @@ a {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  backdrop-filter: blur(8px);
+  padding: 0.95rem 1.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--moss) 22%, white);
+  background:
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, #ffffff 78%, var(--blossom-soft)),
+      color-mix(in srgb, #ffffff 82%, var(--sky-soft))
+    );
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .brand {
+  font-family: "Fraunces", Georgia, serif;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.02em;
   text-decoration: none;
-  color: var(--ink);
+  color: var(--leaf-deep);
+  background: linear-gradient(120deg, var(--leaf-deep), var(--moss) 55%, var(--blossom));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.35rem 1rem;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
   text-decoration: none;
   color: var(--muted);
+  padding: 0.35rem 0.15rem;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--moss), var(--sky));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  transform: scaleX(1);
 }
 
 .nav-links a.active {
-  color: var(--ink);
+  color: var(--leaf-deep);
   font-weight: 600;
 }
 
 .nav-user {
   color: var(--muted);
   font-size: 0.95rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--sky) 35%, white);
+  background: color-mix(in srgb, var(--sky-soft) 70%, white);
 }
 
 .linkish {
   border: 0;
   background: transparent;
-  color: var(--accent);
+  color: var(--blossom);
   cursor: pointer;
   font: inherit;
   padding: 0;
 }
 
+.linkish:hover {
+  color: var(--leaf-deep);
+}
+
 .page,
 .auth-page {
   width: min(640px, calc(100% - 2rem));
-  margin: 2rem auto;
+  margin: 2rem auto 3rem;
+  animation: rise-in 420ms ease both;
 }
 
 .page.wide {
-  width: min(860px, calc(100% - 2rem));
+  width: min(900px, calc(100% - 2rem));
 }
 
 .page-head,
@@ -107,14 +220,34 @@ a {
   margin-bottom: 1rem;
 }
 
+.stats .panel.compact:nth-child(1) {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, white 88%, var(--moss)), white);
+  border-color: color-mix(in srgb, var(--moss) 35%, white);
+}
+
+.stats .panel.compact:nth-child(2) {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, white 88%, var(--sky)), white);
+  border-color: color-mix(in srgb, var(--sky) 40%, white);
+}
+
+.stats .panel.compact:nth-child(3) {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, white 86%, var(--blossom-soft)), white);
+  border-color: color-mix(in srgb, var(--blossom) 28%, white);
+}
+
 .panel.compact {
   padding: 1rem;
 }
 
 .stat {
   margin: 0;
-  font-size: 1.8rem;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.9rem;
   font-weight: 700;
+  color: var(--leaf-deep);
 }
 
 .list {
@@ -130,13 +263,18 @@ a {
   justify-content: space-between;
   gap: 1rem;
   align-items: center;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 0.35rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--moss) 18%, white);
+  transition: background 160ms ease;
+}
+
+.list li:hover {
+  background: color-mix(in srgb, var(--butter-soft) 45%, transparent);
 }
 
 .list li:last-child {
   border-bottom: 0;
-  padding-bottom: 0;
+  padding-bottom: 0.35rem;
 }
 
 .muted {
@@ -144,16 +282,29 @@ a {
 }
 
 .success {
-  color: var(--accent);
+  color: var(--leaf);
   margin: 0;
 }
 
-.button-link {
+.button-link,
+button:not(.linkish):not(.danger-link) {
   display: inline-block;
-  padding: 0.7rem 1.1rem;
-  background: var(--accent);
+  padding: 0.72rem 1.15rem;
+  border: 0;
+  background: linear-gradient(135deg, var(--leaf) 0%, var(--moss) 70%, #7bb3a0 100%);
   color: var(--accent-ink);
   text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--leaf) 18%, transparent);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.button-link:hover,
+button:not(.linkish):not(.danger-link):hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--leaf) 24%, transparent);
 }
 
 .danger-link {
@@ -165,12 +316,22 @@ a {
   padding: 0;
 }
 
-select {
+select,
+input {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--moss) 25%, #dfe8e2);
+  background: color-mix(in srgb, white 92%, var(--petal));
   font: inherit;
+  color: var(--ink);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--sky) 55%, var(--moss));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sky-soft) 80%, transparent);
 }
 
 .checkbox {
@@ -204,26 +365,41 @@ select {
   width: 96px;
   height: 96px;
   object-fit: cover;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 2px solid color-mix(in srgb, var(--blossom) 35%, white);
+  background: linear-gradient(145deg, var(--blossom-soft), var(--sky-soft));
 }
 
 .avatar.placeholder {
   display: grid;
   place-items: center;
+  font-family: "Fraunces", Georgia, serif;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--leaf);
+}
+
+h1,
+h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.02em;
+  color: var(--leaf-deep);
 }
 
 h1 {
   margin: 0 0 0.4rem;
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-size: clamp(1.85rem, 4vw, 2.55rem);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.2rem;
 }
 
 .lede {
   margin: 0 0 1.5rem;
   color: var(--muted);
+  max-width: 38rem;
 }
 
 .auth-form,
@@ -231,8 +407,16 @@ h1 {
   display: grid;
   gap: 1rem;
   padding: 1.25rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, white 90%, var(--sky-soft)),
+      color-mix(in srgb, white 94%, var(--butter-soft))
+    );
+  border: 1px solid color-mix(in srgb, var(--moss) 22%, white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  animation: rise-in 480ms ease both;
 }
 
 .auth-form label {
@@ -241,27 +425,16 @@ h1 {
   font-size: 0.95rem;
 }
 
-input {
-  width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--line);
-  background: #fff;
-  font: inherit;
-}
-
-button {
-  justify-self: start;
-  padding: 0.7rem 1.1rem;
-  border: 0;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font: inherit;
-  cursor: pointer;
+.field-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .status {
@@ -297,4 +470,30 @@ button:disabled {
 
 .meta dd {
   margin: 0;
+}
+
+.pager button {
+  background: linear-gradient(135deg, var(--sky) 0%, #6aa8bb 100%);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--sky) 28%, transparent);
+}
+
+@media (max-width: 640px) {
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .meta div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
