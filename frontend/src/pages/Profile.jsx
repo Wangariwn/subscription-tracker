@@ -79,6 +79,14 @@ export default function Profile() {
                 <dt>Email</dt>
                 <dd>{data.email}</dd>
               </div>
+              <div>
+                <dt>Role</dt>
+                <dd>
+                  <span className={`role-badge role-${data.role || "user"}`}>
+                    {data.role || "user"}
+                  </span>
+                </dd>
+              </div>
             </dl>
           </div>
 

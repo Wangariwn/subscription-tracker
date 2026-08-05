@@ -221,6 +221,7 @@ export function AuthProvider({ children }) {
     setUser,
     bootstrapping,
     isAuthenticated: Boolean(token),
+    isAdmin: user?.role === "admin",
     login,
     logout,
     loginWithCredentials,

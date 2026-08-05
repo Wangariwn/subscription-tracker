@@ -1,4 +1,4 @@
-from resources.admin import AdminUsers
+from resources.admin import AdminSubscriptions, AdminUsers
 from resources.auth import AvatarUpload, Login, Me, Refresh, Register
 from resources.catalog import CatalogDetail, CatalogList, CatalogSubscribers
 from resources.dashboard import AdminAnalytics, Dashboard
@@ -23,3 +23,4 @@ def register_resources(api):
 
     api.add_resource(AdminUsers, "/admin/users")
     api.add_resource(AdminAnalytics, "/admin/analytics")
+    api.add_resource(AdminSubscriptions, "/admin/subscriptions")

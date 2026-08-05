@@ -129,6 +129,7 @@ Paginated responses include `items`, `total`, `page`, `per_page`, `total_pages`.
 | --- | --- | --- | --- |
 | `GET` | `/admin/users` | JWT + admin | List users |
 | `GET` | `/admin/analytics` | JWT + admin | Aggregates: `count`/`sum`/`group_by`/`having`, `.any()` trials |
+| `GET` | `/admin/subscriptions` | JWT + admin | Paginated list of all users' subscriptions (+ owner) |
 | `POST` | `/catalog` | JWT + admin | Create catalog template |
 | `PATCH` | `/catalog/<id>` | JWT + admin | Update catalog template |
 | `DELETE` | `/catalog/<id>` | JWT + admin | Delete catalog template |
@@ -144,7 +145,7 @@ npm run dev
 
 Vite proxies `/api` → `http://127.0.0.1:5555` when `VITE_API_URL` is unset.
 
-Frontend routes: `/login`, `/register`, protected `/`, `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit`, `/catalog`, `/profile`. Access + refresh tokens live in `localStorage`; expired access tokens are refreshed automatically.
+Frontend routes: `/login`, `/register`, protected `/`, `/subscriptions`, `/subscriptions/new`, `/subscriptions/:id/edit`, `/catalog`, `/profile`, and admin-only `/admin/analytics`, `/admin/subscriptions`, `/admin/users` (gated by `user.role === "admin"`). Catalog create/edit/delete controls appear for admins. Access + refresh tokens live in `localStorage`; expired access tokens are refreshed automatically.
 
 Frontend data flow: `fetch` only (no axios), `AuthContext` holds tokens, `useFetch` / `useApi` custom hooks, and every request surface shows **loading / error / success**.
 

@@ -22,11 +22,69 @@ def parse_date(value, field_name):
         raise ValueError(f"{field_name} must be an ISO date (YYYY-MM-DD)")
 
 
-def serialize_subscription(sub):
+def serialize_subscription(sub, include_user=False):
     data = sub.to_dict()
     if sub.catalog_service:
         data["catalog_service"] = sub.catalog_service.to_dict()
+    if include_user and sub.user:
+        data["user"] = {
+            "id": sub.user.id,
+            "username": sub.user.username,
+            "email": sub.user.email,
+            "role": sub.user.role,
+        }
     return data
+
+
+def apply_subscription_filters(query, q_columns=None):
+    """Shared search + cost/trial/renewal filters. Assumes CatalogService is joined."""
+    from flask import request
+
+    q = (request.args.get("q") or request.args.get("search") or "").strip()
+    category = (request.args.get("category") or "").strip()
+    is_trial = request.args.get("is_trial")
+    min_cost = request.args.get("min_cost")
+    max_cost = request.args.get("max_cost")
+    renewing_before = request.args.get("renewing_before")
+    renewing_after = request.args.get("renewing_after")
+
+    if q:
+        like = f"%{q}%"
+        columns = q_columns or (
+            CatalogService.service_name,
+            CatalogService.category,
+        )
+        query = query.filter(or_(*(col.ilike(like) for col in columns)))
+
+    if category:
+        query = query.filter(CatalogService.category == category)
+
+    if is_trial is not None and is_trial != "":
+        flag = str(is_trial).lower() in ("1", "true", "yes")
+        query = query.filter(Subscription.is_trial.is_(flag))
+
+    try:
+        if min_cost is not None and min_cost != "":
+            query = query.filter(Subscription.cost >= float(min_cost))
+        if max_cost is not None and max_cost != "":
+            query = query.filter(Subscription.cost <= float(max_cost))
+    except ValueError:
+        return None, error_response("min_cost and max_cost must be numbers")
+
+    try:
+        if renewing_after:
+            query = query.filter(
+                Subscription.renewal_date >= parse_date(renewing_after, "renewing_after")
+            )
+        if renewing_before:
+            query = query.filter(
+                Subscription.renewal_date
+                <= parse_date(renewing_before, "renewing_before")
+            )
+    except ValueError as err:
+        return None, error_response(str(err))
+
+    return query, None
 
 
 class SubscriptionList(Resource):
@@ -45,14 +103,6 @@ class SubscriptionList(Resource):
         if err:
             return err
 
-        q = (request.args.get("q") or request.args.get("search") or "").strip()
-        category = (request.args.get("category") or "").strip()
-        is_trial = request.args.get("is_trial")
-        min_cost = request.args.get("min_cost")
-        max_cost = request.args.get("max_cost")
-        renewing_before = request.args.get("renewing_before")
-        renewing_after = request.args.get("renewing_after")
-
         query = (
             Subscription.query.options(joinedload(Subscription.catalog_service))
             .join(CatalogService)
@@ -60,42 +110,9 @@ class SubscriptionList(Resource):
             .order_by(Subscription.renewal_date.asc())
         )
 
-        if q:
-            like = f"%{q}%"
-            query = query.filter(
-                or_(
-                    CatalogService.service_name.ilike(like),
-                    CatalogService.category.ilike(like),
-                )
-            )
-
-        if category:
-            query = query.filter(CatalogService.category == category)
-
-        if is_trial is not None and is_trial != "":
-            flag = str(is_trial).lower() in ("1", "true", "yes")
-            query = query.filter(Subscription.is_trial.is_(flag))
-
-        try:
-            if min_cost is not None and min_cost != "":
-                query = query.filter(Subscription.cost >= float(min_cost))
-            if max_cost is not None and max_cost != "":
-                query = query.filter(Subscription.cost <= float(max_cost))
-        except ValueError:
-            return error_response("min_cost and max_cost must be numbers")
-
-        try:
-            if renewing_after:
-                query = query.filter(
-                    Subscription.renewal_date >= parse_date(renewing_after, "renewing_after")
-                )
-            if renewing_before:
-                query = query.filter(
-                    Subscription.renewal_date
-                    <= parse_date(renewing_before, "renewing_before")
-                )
-        except ValueError as err:
-            return error_response(str(err))
+        query, filter_err = apply_subscription_filters(query)
+        if filter_err:
+            return filter_err
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         items = [serialize_subscription(s) for s in pagination.items]

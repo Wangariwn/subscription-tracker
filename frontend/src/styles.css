@@ -177,6 +177,23 @@ a:hover {
   background: color-mix(in srgb, var(--sky-soft) 70%, white);
 }
 
+.role-badge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--moss) 30%, white);
+  background: color-mix(in srgb, var(--moss) 12%, white);
+  color: var(--leaf-deep);
+}
+
+.role-badge.role-admin {
+  border-color: color-mix(in srgb, var(--blossom) 35%, white);
+  background: color-mix(in srgb, var(--blossom-soft) 70%, white);
+  color: color-mix(in srgb, var(--blossom) 70%, var(--ink));
+}
+
 .linkish {
   border: 0;
   background: transparent;

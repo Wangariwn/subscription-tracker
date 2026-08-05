@@ -40,6 +40,22 @@ def test_admin_analytics_ok_for_admin(client, seeded):
     assert response.json["total_subscriptions"] == 2
 
 
+def test_admin_subscriptions_forbidden_for_user(client, seeded):
+    headers, _ = auth_header(client, "demo", "demo123")
+    response = client.get("/admin/subscriptions", headers=headers)
+    assert response.status_code == 403
+
+
+def test_admin_subscriptions_lists_all(client, seeded):
+    headers, _ = auth_header(client, "admin", "admin123")
+    response = client.get("/admin/subscriptions", headers=headers)
+    assert response.status_code == 200
+    assert response.json["total"] == 2
+    assert all("user" in item for item in response.json["items"])
+    usernames = {item["user"]["username"] for item in response.json["items"]}
+    assert "demo" in usernames
+
+
 def test_refresh_token_issues_new_access(client, seeded):
     _, body = auth_header(client)
     refresh = body["refresh_token"]
