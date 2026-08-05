@@ -17,11 +17,28 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     app.json.compact = False
 
-    origin = app.config.get("FRONTEND_ORIGIN", "*")
-    if origin == "*":
+    raw_origin = app.config.get("FRONTEND_ORIGIN", "*")
+    if raw_origin == "*":
         CORS(app)
     else:
-        CORS(app, origins=[origin], supports_credentials=True)
+        origins = [part.strip() for part in raw_origin.split(",") if part.strip()]
+        # Always allow this project's Vercel production + preview URLs
+        origins.extend(
+            [
+                "https://renewly-ivory.vercel.app",
+                r"https://renewly-.*\.vercel\.app",
+                "http://127.0.0.1:5173",
+                "http://localhost:5173",
+            ]
+        )
+        # Deduplicate while preserving order
+        seen = set()
+        unique = []
+        for item in origins:
+            if item not in seen:
+                seen.add(item)
+                unique.append(item)
+        CORS(app, origins=unique, supports_credentials=True)
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)

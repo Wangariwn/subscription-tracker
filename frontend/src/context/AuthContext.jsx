@@ -30,7 +30,7 @@ function networkErrorMessage(err) {
     err instanceof TypeError ||
     /failed to fetch|networkerror|load failed/i.test(err?.message || "")
   ) {
-    return "Cannot reach the API. Start the backend on port 5555, then try again.";
+    return "Cannot reach the API. Open the Render API URL once to wake it, wait for status ok, then retry login.";
   }
   return err?.message || "Something went wrong";
 }
