@@ -47,7 +47,10 @@ export default function Profile() {
   return (
     <main className="page">
       <h1>Profile</h1>
-      <p className="lede">Update your avatar via Cloudinary-backed upload.</p>
+      <p className="lede">
+        One profile per user (1:1). Display name and avatar stay off the auth
+        table.
+      </p>
 
       {loading && <p className="status">Loading profile…</p>}
       {error && <p className="error">{error.message}</p>}

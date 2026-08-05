@@ -33,8 +33,12 @@ export default function Login() {
 
   return (
     <main className="auth-page">
+      <p className="eyebrow">Renewly</p>
       <h1>Log in</h1>
-      <p className="lede">Use your JWT-backed account to open the dashboard.</p>
+      <p className="lede">
+        Sign in to track subscriptions, renewals, and free trials. The API
+        returns a JWT used on every protected request.
+      </p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
@@ -64,6 +68,11 @@ export default function Login() {
           Log in
         </button>
       </form>
+
+      <p className="demo-hint muted">
+        Demo: <code>demo</code> / <code>demo123</code> · Admin:{" "}
+        <code>admin</code> / <code>admin123</code>
+      </p>
 
       <p className="auth-switch">
         No account? <Link to="/register">Register</Link>

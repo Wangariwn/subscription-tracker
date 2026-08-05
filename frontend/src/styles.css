@@ -298,6 +298,26 @@ a:hover {
   color: var(--muted);
 }
 
+.eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--moss);
+}
+
+.demo-hint {
+  margin: 1rem 0 0;
+  font-size: 0.92rem;
+}
+
+.demo-hint code {
+  font-size: 0.88em;
+  padding: 0.1rem 0.35rem;
+  background: color-mix(in srgb, var(--butter-soft) 70%, white);
+}
+
 .success {
   color: var(--leaf);
   margin: 0;

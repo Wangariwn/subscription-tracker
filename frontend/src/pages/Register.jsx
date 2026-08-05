@@ -66,8 +66,11 @@ export default function Register() {
 
   return (
     <main className="auth-page">
+      <p className="eyebrow">Renewly</p>
       <h1>Register</h1>
-      <p className="lede">Create a user account and profile, then receive a JWT.</p>
+      <p className="lede">
+        Creates a User and a linked Profile (1:1), then returns a JWT.
+      </p>
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <label>

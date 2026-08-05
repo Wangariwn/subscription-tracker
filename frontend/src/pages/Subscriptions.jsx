@@ -63,7 +63,8 @@ export default function Subscriptions() {
         <div>
           <h1>Subscriptions</h1>
           <p className="lede">
-            Search and combine filters (category, trial, cost) on one list endpoint.
+            Your enrollments in catalog services — cost, renewal dates, and
+            trial flags live on each subscription (the many-to-many join).
           </p>
         </div>
         <Link className="button-link" to="/subscriptions/new">

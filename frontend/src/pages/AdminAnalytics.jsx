@@ -9,7 +9,7 @@ export default function AdminAnalytics() {
         <div>
           <h1>Platform analytics</h1>
           <p className="lede">
-            Admin-only view of users, spend, categories, and popular services.
+            Role-gated deep queries — regular users get 403 here.
           </p>
         </div>
       </div>

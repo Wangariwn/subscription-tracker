@@ -12,7 +12,8 @@ export default function Home() {
         <div>
           <h1>Dashboard</h1>
           <p className="lede">
-            Hello {user?.username}. Track spend, renewals, and free-trial alerts.
+            Aggregates from your subscriptions — spend, renewals, and trials
+            ending soon.
           </p>
         </div>
         <Link className="button-link" to="/subscriptions/new">

@@ -128,8 +128,8 @@ export default function Catalog() {
           <h1>Catalog</h1>
           <p className="lede">
             {isAdmin
-              ? "Browse templates, or add and edit them as an admin."
-              : "Browse service templates, then add one to your list."}
+              ? "Shared service templates (admin can edit). Users enroll via subscriptions."
+              : "Shared service templates — many users can track the same service."}
           </p>
         </div>
         <Link className="button-link" to="/subscriptions/new">

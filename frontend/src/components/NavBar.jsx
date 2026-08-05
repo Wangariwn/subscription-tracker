@@ -7,7 +7,7 @@ export function NavBar() {
   return (
     <header className="nav">
       <Link to="/" className="brand">
-        Subscription Tracker
+        Renewly
       </Link>
       <nav className="nav-links">
         {isAuthenticated ? (
