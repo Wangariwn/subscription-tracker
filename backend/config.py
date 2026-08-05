@@ -15,12 +15,15 @@ def _database_uri():
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me-secret-key!!")
+    SECRET_KEY = os.environ.get(
+        "SECRET_KEY",
+        "dev-only-change-me-secret-key-32chars!!",
+    )
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get(
         "JWT_SECRET",
-        "dev-only-change-me-jwt-secret-key!!",
+        "dev-only-change-me-jwt-secret-key-32chars!!",
     )
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
         minutes=int(os.environ.get("JWT_ACCESS_MINUTES", "15"))

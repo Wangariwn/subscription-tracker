@@ -159,18 +159,56 @@ python run_smoke_tests.py   # no extra deps
 pytest -q                   # after pytest is installed
 ```
 
-### Deploy (Render + Vercel)
+### Deploy (Render API + Vercel frontend)
 
-1. **Backend (Render)** — connect this repo, use `render.yaml` (or Web Service with root `backend`, start `gunicorn -b 0.0.0.0:$PORT 'app:app'`). Set env vars from `.env.example`, run `flask db upgrade` + `python seed.py` in a one-off shell.
-2. **Frontend (Vercel/Render static)** — set `VITE_API_URL` to the live API URL (no trailing slash). Set backend `FRONTEND_ORIGIN` to the live frontend origin.
-3. **Cloudinary** — create a free cloud, set `CLOUDINARY_*` on the API service.
+Push `main` to GitHub first (`git push`), then:
+
+#### 1. Backend — Render
+
+1. Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**.
+2. Connect `Wangariwn/subscription-tracker` and apply `render.yaml`.
+3. That creates:
+   - Web service `subscription-tracker-api` (root `backend`)
+   - Free Postgres `subscription-tracker-db`
+4. After the first deploy, open the service → **Environment** and set:
+   - `FRONTEND_ORIGIN` = your Vercel URL (e.g. `https://renewly.vercel.app`) — **no trailing slash**
+   - Optional: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` for avatars
+5. Open **Shell** on the API service and seed demo data once:
+
+```bash
+python seed.py
+```
+
+6. Confirm health: open `https://<your-api>.onrender.com/` — you should see `{"status":"ok",...}`.
+
+Demo logins after seed: `demo` / `demo123`, `admin` / `admin123`.
+
+#### 2. Frontend — Vercel
+
+1. Go to [Vercel](https://vercel.com) → **Add New Project** → import the same GitHub repo.
+2. Set:
+   - **Root Directory:** `frontend`
+   - **Framework Preset:** Vite
+   - **Build Command:** `npm run build` (default)
+   - **Output Directory:** `dist` (default)
+3. **Environment Variable** (Production):
+   - `VITE_API_URL` = `https://<your-api>.onrender.com` — **no trailing slash**
+4. Deploy. Copy the Vercel URL back into Render’s `FRONTEND_ORIGIN`, then **Manual Deploy** the API once so CORS matches.
+
+#### 3. Cross-check
+
+| Check | Expect |
+| --- | --- |
+| API `/` | JSON `status: ok` |
+| Vercel site login | Dashboard loads (not CORS / network errors) |
+| Browser Network tab | Calls go to Render, not `/api` |
 
 Live URLs (fill in after you deploy):
 
 | App | URL |
 | --- | --- |
-| API | _pending deploy_ |
-| Frontend | _pending deploy_ |
+| API (Render) | _pending deploy_ |
+| Frontend (Vercel) | _pending deploy_ |
 
 ## Requirement checklist
 

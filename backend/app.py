@@ -29,6 +29,17 @@ def create_app(config_class=Config):
     api = Api(app)
     register_resources(api)
 
+    @app.get("/")
+    def health():
+        """Render / uptime health check — not the React UI."""
+        return jsonify(
+            {
+                "status": "ok",
+                "service": "renewly-api",
+                "message": "API is running. Use the Vercel frontend URL in the browser.",
+            }
+        )
+
     @jwt.unauthorized_loader
     def missing_token_callback(reason):
         return jsonify({"errors": [reason]}), 401

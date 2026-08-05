@@ -61,7 +61,8 @@ def test_subscription_search_and_combined_filters(client, seeded):
     assert response.json["total"] == 1
     assert response.json["items"][0]["catalog_service"]["service_name"] == "Spotify"
 
-    before = (date.today() + timedelta(days=7)).isoformat()
+    # Netflix renews in 10 days in seed data — window must include that date
+    before = (date.today() + timedelta(days=14)).isoformat()
     response = client.get(
         f"/subscriptions?category=Streaming&renewing_before={before}",
         headers=headers,
